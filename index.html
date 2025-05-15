@@ -4,9 +4,74 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>两分钟测测你属于哪种体质？</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
+    h1 { text-align: center; }
+    .question { margin: 20px 0; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    .question-title { font-weight: bold; margin-bottom: 10px; }
+    .options label { display: block; margin: 4px 0; }
+    button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+  </style>
 </head>
 <body>
   <h1>两分钟测测你属于哪种体质？</h1>
-  <p>请在手机上填写问卷，系统会根据你的选择自动跳转到对应体质的分析页面。</p>
+  <form id="quizForm">
+    <div id="questionsContainer"></div>
+    <button type="submit">提交测试</button>
+  </form>
+
+<script>
+  const questions = [
+    { title: "我容易感到疲倦乏力，说话无力或不想多说。", type: "qixu" },
+    { title: "我手脚经常冰凉，即使天气暖也难缓解。", type: "yangxu" },
+    { title: "我吃冷饮或吹空调容易腹泻或感到不适。", type: "yangxu" },
+    { title: "我经常口干、喉咙干，晚上容易出汗。", type: "yinxu" },
+    { title: "我容易长痘、出油，常感口苦、口干。", type: "shire" },
+    { title: "我体形偏胖，常感身体沉重、胸闷有痰。", type: "phlegm" },
+    { title: "我经常情绪低落、紧张或压抑，爱叹气。", type: "qiyu" },
+    { title: "我面色偏暗、易淤青，有刺痛或麻木感。", type: "xueyu" },
+    { title: "我容易过敏，如花粉过敏、皮疹、哮喘。", type: "tebing" },
+    { title: "我常上火，易口腔溃疡，大便干结。", type: "yinxu" },
+    { title: "我精力充沛、饮食睡眠正常，少生病。", type: "pinghe" },
+    { title: "我经常感冒，或病后恢复慢、抵抗力差。", type: "qixu" }
+  ];
+
+  const types = {};
+  questions.forEach(q => types[q.type] = 0);
+
+  const container = document.getElementById("questionsContainer");
+  questions.forEach((q, index) => {
+    const div = document.createElement("div");
+    div.className = "question";
+    div.innerHTML = `
+      <div class="question-title">Q${index + 1}. ${q.title}</div>
+      <div class="options">
+        ${["非常符合", "较符合", "一般", "不太符合", "完全不符合"].map((label, i) => `
+          <label><input type="radio" name="q${index}" value="${4 - i}" required> ${label}</label>
+        `).join('')}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+
+  document.getElementById("quizForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const data = new FormData(this);
+    questions.forEach((q, i) => {
+      const v = parseInt(data.get("q" + i));
+      types[q.type] += v;
+    });
+
+    const sorted = Object.entries(types).sort((a, b) => b[1] - a[1]);
+    const primary = sorted[0][0];
+    const map = {
+      qixu: "气虚质", yangxu: "阳虚质", yinxu: "阴虚质",
+      shire: "湿热质", phlegm: "痰湿质", qiyu: "气郁质",
+      xueyu: "血瘀质", tebing: "特禀质", pinghe: "平和质"
+    };
+    const resultPage = "results/" + map[primary] + "_表格化结果页面.html";
+    window.location.href = resultPage;
+  });
+</script>
 </body>
 </html>
